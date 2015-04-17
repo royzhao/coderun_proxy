@@ -28,7 +28,7 @@ module.exports = function(redis_addr, opts) {
       console.log(req.url)
       var stream = websocket(connection)
       var ws_url = 'ws://' + docker_hosts+'/'+uri;
-      pump(stream, websocket(url), stream,function(err){
+      pump(stream, websocket(ws_url), stream,function(err){
           console.log('error in create docker');
       })
 
@@ -36,7 +36,9 @@ module.exports = function(redis_addr, opts) {
 
   server.all(cors())
 
-
+    server.get('/-/*', function(req, res) {
+        send(req, req.params.glob, {root:path.join(__dirname, 'web')}).pipe(res)
+    })
     //TODO check container is exist
   server.post('/runner/{imagename}',function(req,res){
       var image = req.params.imagename
@@ -51,6 +53,8 @@ module.exports = function(redis_addr, opts) {
       return pump(req, request('http://'+docker_hosts+'/user/'+userid+'/'+imagename+'/'+tag), res)
 
   })
+    server.get('/bundle.js', '/-/bundle.js')
+    server.get('/index.html', '/-/index.html')
   //server.get('/containers/{id}','/-/index.html')
 
 
