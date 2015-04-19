@@ -24,11 +24,12 @@ module.exports = function(redis_addr, opts) {
   wss.on('connection', function(connection) {
     var req = connection.upgradeReq
     var uri = req.url.slice(1)
-
       console.log(req.url)
       var stream = websocket(connection)
       var ws_url = 'ws://' + docker_hosts+'/'+uri;
+
       pump(stream, websocket(ws_url), stream,function(err){
+        console.log(err)
           console.log('error in create docker');
       })
 
