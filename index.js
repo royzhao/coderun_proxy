@@ -41,6 +41,13 @@ module.exports = function(default_docker_addr, opts) {
     server.get('/-/*', function(req, res) {
         send(req, req.params.glob, {root:path.join(__dirname, 'web')}).pipe(res)
     })
+    server.get('/containers/{id}', function(req, res) {
+        var id = req.params.id
+        var container = containers.hasOwnProperty(id) && containers[id]
+        if (!container) return res.error(404, 'Could not find container')
+        //console.log(contain)
+        return res.send({'ID':container.docker_run.id})
+    })
     //TODO check container is exist
   server.post('/runner/{imagename}',function(req,res){
       var image = req.params.imagename
