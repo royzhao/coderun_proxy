@@ -43,6 +43,7 @@ module.exports = function(default_docker_addr, opts) {
     })
     server.get('/containers/{id}', function(req, res) {
         var id = req.params.id
+        console.log('find containers'+id)
         return pump(req, request('http://'+docker_hosts+'/containers/'+id), res)
     })
     //TODO check container is exist
@@ -50,11 +51,11 @@ module.exports = function(default_docker_addr, opts) {
       var image = req.params.imagename
       console.log("runner image is :"+image)
       //find a instance
-      rest.get('http://'+docker_hosts+'/findrunner/'+image,{timeout:200})
+      rest.get('http://'+docker_hosts+'/findrunner/'+image,{timeout:800})
               .on('success',function(data){
                   console.log(data);
                   if(data == null || data == ""){
-                    rest.post('http://'+docker_hosts+'/createrunner/'+image,{timeout:200})
+                    rest.post('http://'+docker_hosts+'/createrunner/'+image,{timeout:800})
                             .on('success',function(data){
                                 if(data.status ==3 && data.instances.length >0 ){
                                     var url = 'http://'+data.hosts+':'+data.instances[0].port+'/api/coderunner';
