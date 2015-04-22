@@ -63,15 +63,15 @@ module.exports = function(default_docker_addr, opts) {
                                     return pump(req, request(url), res)
                                 }else{
                                     var result ={
-                                        status:4,
-                                        message:"need retry"
+                                        status:data.status,
+                                        message:data.status_msg
                                     }
                                     return res.send(result)
                                 }
                             })
                             .on('error',function(err){
                                     var result ={
-                                      status:4,
+                                      status:6,
                                       message:"server error, retry"
                                     }
                               return res.send(result)
@@ -91,8 +91,8 @@ module.exports = function(default_docker_addr, opts) {
                       return pump(req, request(url), res)                     
                     }else{
                                     var result ={
-                                      status:4,
-                                      message:"need retry"
+                                        status:data.status,
+                                        message:data.status.msg
                                     }
                                     return res.send(result)                      
                     }
@@ -101,11 +101,11 @@ module.exports = function(default_docker_addr, opts) {
               })
               .on('error',function(err){
                 console.log(err);
-                var res= {
-                    status:4,
+                var result= {
+                    status:6,
                     message:"error"+err
                 }
-                return res.send(res)
+                return res.send(result)
               })
               .on('timeout',function(ms){
                   console.log('did not return within '+ms+' ms');
