@@ -101,7 +101,11 @@ module.exports = function(default_docker_addr, opts) {
               })
               .on('error',function(err){
                 console.log(err);
-                return res.send(err)
+                var res= {
+                    status:4,
+                    message:"error"+err
+                }
+                return res.send(res)
               })
               .on('timeout',function(ms){
                   console.log('did not return within '+ms+' ms');
