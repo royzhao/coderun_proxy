@@ -122,6 +122,7 @@ module.exports = function(default_docker_addr, opts) {
       var userid = req.params.userid
       var imagename = req.params.imagename
       var tag = req.params.tag
+      console.log(docker_hosts)
       return pump(req, request('http://'+docker_hosts+'/user/'+userid+'/'+imagename+'/'+tag), res)
 
   })

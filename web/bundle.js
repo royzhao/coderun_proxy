@@ -8181,6 +8181,7 @@ Terminal.prototype.refresh = function(start, end) {
             out += '&nbsp;';
           } else {
             if (isWide(ch)) i++;
+            if(ch == '-') i++;
             out += ch;
           }
           break;
@@ -12872,6 +12873,9 @@ function WebSocketStream(target, protocols) {
   function onready() {
     stream.setReadable(proxy)
     stream.setWritable(proxy)
+    var event = document.createEvent('HTMLEvents')
+      event.initEvent('resize',true,true)
+    document.dispatchEvent(event);
   }
 
   function onclose() {
