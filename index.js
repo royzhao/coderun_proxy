@@ -58,7 +58,7 @@ module.exports = function(default_docker_addr, opts) {
                     rest.post('http://'+docker_hosts+'/createrunner/'+image,{timeout:800})
                             .on('success',function(data){
                                 if(data.status ==3 && data.instances.length >0 ){
-                                    var url = 'http://'+data.hosts+':'+data.instances[0].port+'/api/coderunner';
+                                    var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
                                     console.log(url)
                                     return pump(req, request(url), res)
                                 }else{
