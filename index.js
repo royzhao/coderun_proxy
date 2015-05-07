@@ -57,7 +57,7 @@ module.exports = function(default_docker_addr, opts) {
                   if(data == null || data == ""){
                     rest.post('http://'+docker_hosts+'/createrunner/'+image,{timeout:800})
                             .on('success',function(data){
-                                if(data.status ==3 && data.instances.length >0 ){
+                                if(data.status ==3 && data.instances ){
                                     var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
                                     console.log(url)
                                     return pump(req, request(url), res)
@@ -85,14 +85,14 @@ module.exports = function(default_docker_addr, opts) {
                                     return res.send(result)
                               })
                   }else{
-                    if(data.status ==3 && data.instances.length >0 ){
-                       var url = 'http://'+data.hosts+':'+data.instances[0].port+'/api/coderunner';
+                    if(data.status ==3 && data.instances ){
+                       var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
                       console.log(url)
                       return pump(req, request(url), res)                     
                     }else{
                                     var result ={
                                         status:data.status,
-                                        message:data.status.msg
+                                        message:data.status_msg
                                     }
                                     return res.send(result)                      
                     }
