@@ -14,11 +14,13 @@ var xtend = require('xtend')
 var rest = require('restler')
 
 var docker_hosts='127.0.0.1:9090'
-module.exports = function(default_docker_addr, opts) {
+var lb_addr = '127.0.0.1:3000'
+module.exports = function(default_docker_addr,lb_addr, opts) {
   var image = "ubuntu";
   if (!opts) opts = {}
   docker_hosts = default_docker_addr||'127.0.0.1:9090'
   var REDIS_ADDR = '127.0.0.1:6379'
+  lb_addr = lb_addr || '127.0.0.1:3000'
   var server = root()
   var wss = new WebSocketServer({server:server})
 
@@ -51,51 +53,28 @@ module.exports = function(default_docker_addr, opts) {
       var image = req.params.imagename
       console.log("runner image is :"+image)
       //find a instance
-      rest.get('http://'+docker_hosts+'/findrunner/'+image,{timeout:800})
+      var jsonData = {imagename:image}
+      rest.postJson('http://'+lb_addr+'/api/dispatcher/v1.0/container/create',jsonData)
               .on('success',function(data){
                   console.log(data);
                   if(data == null || data == ""){
-                    rest.post('http://'+docker_hosts+'/createrunner/'+image,{timeout:800})
-                            .on('success',function(data){
-                                if(data.status ==3 && data.instances ){
-                                    var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
-                                    console.log(url)
-                                    return pump(req, request(url), res)
-                                }else{
-                                    var result ={
-                                        status:data.status,
-                                        message:data.status_msg
-                                    }
-                                    return res.send(result)
-                                }
-                            })
-                            .on('error',function(err){
-                                    var result ={
-                                      status:6,
-                                      message:"server error, retry"
-                                    }
-                              return res.send(result)
-                            })
-                            .on('timeout',function(ms){
-                                    console.log('did not return within '+ms+' ms');
-                                    var result ={
-                                      status:4,
-                                      message:"timeout,retry"
-                                    }
-                                    return res.send(result)
-                              })
+                      var result ={
+                          status:6,
+                          message:'服务器异常，请稍后重试'
+                      }
+                      return res.send(result)
                   }else{
-                    if(data.status ==3 && data.instances ){
-                       var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
-                      console.log(url)
-                      return pump(req, request(url), res)                     
-                    }else{
-                                    var result ={
-                                        status:data.status,
-                                        message:data.status_msg
-                                    }
-                                    return res.send(result)                      
-                    }
+                      if(data.Status ==3 && data.Instance != null ){
+                          var url = 'http://'+data.Instance.ServerIP+':'+data.Instance.ServerPort+'/api/coderunner';
+                          console.log(url)
+                          return pump(req, request(url), res)
+                      }else{
+                          var result ={
+                              status:data.status,
+                              message:'没有该镜像！'
+                          }
+                          return res.send(result)
+                      }
                   }
 
               })
@@ -115,8 +94,70 @@ module.exports = function(default_docker_addr, opts) {
                   }
                   return res.send(result)
             })
-      // return pump(req, request('http://'+docker_hosts+'/runner/'+image), res)
-
+      //rest.get('http://'+docker_hosts+'/findrunner/'+image,{timeout:800})
+      //        .on('success',function(data){
+      //            console.log(data);
+      //            if(data == null || data == ""){
+      //              rest.post('http://'+docker_hosts+'/createrunner/'+image,{timeout:800})
+      //                      .on('success',function(data){
+      //                          if(data.status ==3 && data.instances ){
+      //                              var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
+      //                              console.log(url)
+      //                              return pump(req, request(url), res)
+      //                          }else{
+      //                              var result ={
+      //                                  status:data.status,
+      //                                  message:data.status_msg
+      //                              }
+      //                              return res.send(result)
+      //                          }
+      //                      })
+      //                      .on('error',function(err){
+      //                              var result ={
+      //                                status:6,
+      //                                message:"server error, retry"
+      //                              }
+      //                        return res.send(result)
+      //                      })
+      //                      .on('timeout',function(ms){
+      //                              console.log('did not return within '+ms+' ms');
+      //                              var result ={
+      //                                status:4,
+      //                                message:"timeout,retry"
+      //                              }
+      //                              return res.send(result)
+      //                        })
+      //            }else{
+      //              if(data.status ==3 && data.instances ){
+      //                 var url = 'http://'+data.hosts+':'+data.instances.port+'/api/coderunner';
+      //                console.log(url)
+      //                return pump(req, request(url), res)
+      //              }else{
+      //                              var result ={
+      //                                  status:data.status,
+      //                                  message:data.status_msg
+      //                              }
+      //                              return res.send(result)
+      //              }
+      //            }
+      //
+      //        })
+      //        .on('error',function(err){
+      //          console.log(err);
+      //          var result= {
+      //              status:6,
+      //              message:"error"+err
+      //          }
+      //          return res.send(result)
+      //        })
+      //        .on('timeout',function(ms){
+      //            console.log('did not return within '+ms+' ms');
+      //            var result ={
+      //              status:4,
+      //              message:"timeout"
+      //            }
+      //            return res.send(result)
+      //      })
   })
   server.get('/user/{userid}/{imagename}/{tag}',function(req,res){
       var userid = req.params.userid

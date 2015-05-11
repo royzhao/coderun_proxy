@@ -9,8 +9,9 @@ var argv = minimist(process.argv, {
 })
 
 var default_docker_addr = argv._[2]
+var lb_addr = argv._[3]
 
-if (argv.help|| !default_docker_addr) {
+if (argv.help|| !default_docker_addr || !lb_addr) {
   console.log('Usage: docker-browser-server default_docker_addr [options]')
   console.log()
   console.log('  --port,    -p  [8080]          (port to listen on)')
@@ -20,7 +21,7 @@ if (argv.help|| !default_docker_addr) {
   return process.exit(argv.help ? 0 : 1)
 }
 
-var server = docker(default_docker_addr, argv)
+var server = docker(default_docker_addr, lb_addr,argv)
 
 server.on('spawn', function(container) {
   console.log('Spawning new container (%s)', container.id)
