@@ -12999,7 +12999,7 @@ var url = require('url')
 
 var u = url.parse(location.toString(), true)
 var terminal = docker()
-var url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host+u.path+'/'+(u.query.id || '')
+var url = (location.protocol === 'https:' ? 'wss://' : 'ws://') +location.host+ '/websocket'+u.path+'/'+(u.query.id || '')
 
 pump(terminal, websocket(url), terminal)
 terminal.appendTo(document.getElementById('console'))

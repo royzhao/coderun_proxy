@@ -24,7 +24,7 @@ module.exports = function(default_docker_addr, opts) {
 
   wss.on('connection', function(connection) {
     var req = connection.upgradeReq
-    var uri = req.url.slice(1)
+    var uri = req.url.slice(11)
       console.log(req.url)
       var stream = websocket(connection)
       var ws_url = 'ws://' + docker_hosts+'/'+uri;
