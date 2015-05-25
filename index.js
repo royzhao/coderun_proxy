@@ -52,9 +52,12 @@ module.exports = function(default_docker_addr,lb_addr, opts) {
   server.post('/runner/{imagename}',function(req,res){
       var image = req.params.imagename
       console.log("runner image is :"+image)
-      //find a instance
-      var jsonData = {imagename:image}
-      rest.postJson('http://'+lb_addr+'/api/dispatcher/v1.0/container/create',jsonData)
+      req.on('json', function(body) {
+
+          //find a instance
+          var jsonData = {imagename:image}
+          console.log(body)
+          rest.postJson('http://'+lb_addr+'/api/dispatcher/v1.0/container/create',jsonData,{timeout:1000})
               .on('success',function(data){
                   console.log(data);
                   if(data == null || data == ""){
@@ -67,7 +70,27 @@ module.exports = function(default_docker_addr,lb_addr, opts) {
                       if(data.Status ==3 && data.Instance != null ){
                           var url = 'http://'+data.Instance.ServerIP+':'+data.Instance.ServerPort+'/api/coderunner';
                           console.log(url)
-                          return pump(req, request(url), res)
+                          //return pump(req, request(url), res)
+                          rest.postJson(url,body,{timeout:800}).
+                              on('success',function(result){
+                                  req.send(result)
+                              })
+                              .on('error',function(err){
+                                  console.log(err);
+                                  var result= {
+                                      status:6,
+                                      message:"error"+err
+                                  }
+                                  return res.send(result)
+                              })
+                              .on('timeout',function(ms){
+                                  //console.log('did not return within '+ms+' ms');
+                                  var result ={
+                                      status:4,
+                                      message:"timeout"
+                                  }
+                                  return res.send(result)
+                              })
                       }else{
                           var result ={
                               status:data.status,
@@ -79,21 +102,24 @@ module.exports = function(default_docker_addr,lb_addr, opts) {
 
               })
               .on('error',function(err){
-                console.log(err);
-                var result= {
-                    status:6,
-                    message:"error"+err
-                }
-                return res.send(result)
-              })
-              .on('timeout',function(ms){
-                  console.log('did not return within '+ms+' ms');
-                  var result ={
-                    status:4,
-                    message:"timeout"
+                  console.log(err);
+                  var result= {
+                      status:6,
+                      message:"error"+err
                   }
                   return res.send(result)
-            })
+              })
+              .on('timeout',function(ms){
+                  //console.log('did not return within '+ms+' ms');
+                  var result ={
+                      status:4,
+                      message:"timeout"
+                  }
+                  return res.send(result)
+              })
+          //res.send(body);
+      });
+
       //rest.get('http://'+docker_hosts+'/findrunner/'+image,{timeout:800})
       //        .on('success',function(data){
       //            console.log(data);
