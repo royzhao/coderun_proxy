@@ -73,7 +73,7 @@ module.exports = function(default_docker_addr,lb_addr, opts) {
                           //return pump(req, request(url), res)
                           rest.postJson(url,body,{timeout:800}).
                               on('success',function(result){
-                                  req.send(result)
+                                  res.send(result)
                               })
                               .on('error',function(err){
                                   console.log(err);
