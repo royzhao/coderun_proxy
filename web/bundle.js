@@ -8181,8 +8181,9 @@ Terminal.prototype.refresh = function(start, end) {
             out += '&nbsp;';
           } else {
             if (isWide(ch)) i++;
-            if(ch == '-') i++;
-            out += ch;
+
+                out += ch;
+
           }
           break;
       }
